@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استودیوی تولید محتوای هوشمند</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Vazirmatn Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Docx.js library for Word export -->
+    <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #0a0a0a;
+            background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 20px 20px;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6a6a6a; }
+        
+        /* Custom select dropdown arrows */
+        select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: left 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-left: 2.5rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* Modal styles */
+        .modal-overlay { transition: opacity 0.3s ease; }
+        .modal-content { transition: transform 0.3s ease; }
+
+        /* Button hover effect */
+        .main-btn, .feature-btn { transition: all 0.3s ease; }
+        .main-btn:hover:not(:disabled), .feature-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .control-group {
+            border-bottom: 1px solid #1f2937;
+            padding-bottom: 1.25rem;
+        }
+        .control-group:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .card-bg {
+            background-color: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hidden-section {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .visible-section {
+            max-height: 1000px; /* Large enough value */
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-200">
+
+    <div id="main-content" class="container mx-auto p-4 sm:p-6 md:p-8">
+        
+        <header class="text-center mb-8 md:mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-2">استودیوی محتوای هوشمند</h1>
+            <p class="text-gray-400">خلق، بهینه‌سازی و ایده‌پردازی محتوای متنی و تصویری</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <!-- Controls Column -->
+            <div class="lg:col-span-4 card-bg p-6 rounded-2xl shadow-lg">
+                <div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-3">
+                    <h2 class="text-2xl font-bold text-white">تنظیمات</h2>
+                    <div class="flex gap-4">
+                        <button id="history-btn" title="تاریخچه" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </button>
+                        <button id="lock-btn" title="قفل کردن صفحه" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="space-y-5">
+                    <!-- AI Settings -->
+                    <div class="control-group space-y-5">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-gray-400">هوش مصنوعی</h3>
+                            <button id="toggle-api-section" title="مخفی/نمایش بخش API" class="text-gray-400 hover:text-white text-sm">[مخفی]</button>
+                        </div>
+                        <div id="api-section" class="visible-section space-y-5">
+                            <div>
+                                <label for="ai-model" class="block mb-2 text-sm font-medium text-gray-300">مدل</label>
+                                <select id="ai-model" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                    <optgroup label="Google"><option value="gemini-2.5-flash-preview-05-20" selected>Gemini 2.5 Flash</option></optgroup>
+                                    <optgroup label="OpenAI"><option value="gpt-4o">GPT-4o</option><option value="gpt-3.5-turbo">GPT-3.5 Turbo</option></optgroup>
+                                </select>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-sm font-medium text-gray-300">کلیدهای API</label>
+                                    <button id="api-guide-btn" class="text-blue-400 hover:text-blue-300 text-xs font-semibold">راهنما</button>
+                                </div>
+                                <div id="api-keys-container" class="space-y-2">
+                                    <!-- API Key inputs will be added here -->
+                                </div>
+                                <button id="add-api-key-btn" class="mt-2 text-sm text-blue-400 hover:text-blue-300">+ افزودن کلید دیگر</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content Context -->
+                    <div class="control-group space-y-5">
+                        <h3 class="text-lg font-semibold text-gray-400">بافتار محتوا (Context)</h3>
+                        <div>
+                            <label for="brand-persona" class="block mb-2 text-sm font-medium text-gray-300">برند / پرسونای شما</label>
+                            <input type="text" id="brand-persona" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5" placeholder="مثال: یک استارت‌آپ فناوری جوان">
+                        </div>
+                        <div>
+                            <label for="target-audience" class="block mb-2 text-sm font-medium text-gray-300">مخاطب هدف</label>
+                            <input type="text" id="target-audience" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5" placeholder="مثال: دانشجویان و کارآفرینان">
+                        </div>
+                        <div>
+                            <label for="content-goal" class="block mb-2 text-sm font-medium text-gray-300">هدف اصلی محتوا</label>
+                            <select id="content-goal" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <option value="inform">اطلاع‌رسانی</option>
+                                <option value="entertain">سرگرمی</option>
+                                <option value="persuade">متقاعدسازی / فروش</option>
+                                <option value="engage">ایجاد تعامل</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Content Definition -->
+                    <div class="control-group space-y-5">
+                        <h3 class="text-lg font-semibold text-gray-400">تعریف محتوا</h3>
+                        <div>
+                            <label for="action" class="block mb-2 text-sm font-medium text-gray-300">عملیات اصلی</label>
+                            <select id="action" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <option value="create">تولید محتوای جدید</option>
+                                <option value="rewrite">بازنویسی متن</option>
+                                <option value="idea-generation">ایده پردازی محتوا</option>
+                                <option value="fact-check">بررسی صحت اطلاعات</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="output-language" class="block mb-2 text-sm font-medium text-gray-300">زبان خروجی</label>
+                            <select id="output-language" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <option value="Persian">فارسی (Persian)</option>
+                                <option value="English">انگلیسی (English)</option>
+                                <option value="Arabic">عربی (Arabic)</option>
+                                <option value="Spanish">اسپانیایی (Spanish)</option>
+                                <option value="French">فرانسوی (French)</option>
+                                <option value="German">آلمانی (German)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="content-destination" class="block mb-2 text-sm font-medium text-gray-300">پلتفرم مقصد</label>
+                            <select id="content-destination" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <option value="general">عمومی (متن ساده)</option>
+                                <option value="blog-post">مقاله وبلاگ</option>
+                                <option value="instagram-caption">کپشن اینستاگرام</option>
+                                <option value="instagram-story">استوری اینستاگرام</option>
+                                <option value="twitter">توییتر</option>
+                                <option value="linkedin-post">پست لینکدین</option>
+                                <option value="wikipedia-article">مقاله ویکی‌پدیا</option>
+                            </select>
+                        </div>
+                         <div>
+                            <label for="tone" class="block mb-2 text-sm font-medium text-gray-300">لحن محتوا</label>
+                            <select id="tone" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <option value="professional">رسمی و حرفه‌ای</option>
+                                <option value="friendly">دوستانه و صمیمی</option>
+                                <option value="humorous">طنزآمیز</option>
+                                <option value="persuasive">متقاعدکننده</option>
+                                <option value="academic">علمی و آکادمیک</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="keywords" class="block mb-2 text-sm font-medium text-gray-300">کلمات کلیدی (با کاما جدا کنید)</label>
+                            <input type="text" id="keywords" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5" placeholder="هوش مصنوعی، تولید محتوا">
+                        </div>
+                        <div>
+                            <label class="block mb-2 text-sm font-medium text-gray-300">لینک‌های منبع (برای ایده گرفتن)</label>
+                             <textarea id="source-urls" class="w-full h-20 bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 resize-none" placeholder="هر لینک در یک خط جدید..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Content Enhancements -->
+                    <div class="space-y-5">
+                         <h3 class="text-lg font-semibold text-gray-400">بهینه‌سازی و جزئیات</h3>
+                        <div id="word-count-wrapper" class="hidden">
+                            <label for="word-count" class="block mb-2 text-sm font-medium text-gray-300">تعداد کلمات (تقریبی)</label>
+                            <input type="number" id="word-count" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5" placeholder="مثال: 800">
+                        </div>
+                        <div id="tweet-thread-wrapper" class="hidden">
+                            <label class="flex items-center cursor-pointer"><input type="checkbox" id="is-thread" class="sr-only peer"><div class="relative w-11 h-6 bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div><span class="ms-3 text-sm font-medium text-gray-300">تولید به صورت رشته توییت</span></label>
+                        </div>
+                        <div id="hashtag-controls-wrapper" class="hidden space-y-3">
+                            <label id="add-hashtags-label" class="flex items-center cursor-pointer"><input type="checkbox" id="add-hashtags" class="sr-only peer"><div class="relative w-11 h-6 bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div><span class="ms-3 text-sm font-medium text-gray-300">افزودن هشتگ</span></label>
+                            <div id="hashtag-count-wrapper" class="hidden">
+                                <label for="hashtag-count" class="block mb-2 text-sm font-medium text-gray-300">تعداد هشتگ‌ها</label>
+                                <input type="number" id="hashtag-count" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5" value="5" min="1" max="30">
+                            </div>
+                        </div>
+                         <div id="seo-wrapper" class="hidden">
+                            <label class="flex items-center cursor-pointer"><input type="checkbox" id="optimize-seo" class="sr-only peer"><div class="relative w-11 h-6 bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div><span class="ms-3 text-sm font-medium text-gray-300">بهینه‌سازی برای SEO</span></label>
+                        </div>
+                        <div id="cta-wrapper" class="hidden">
+                            <label for="custom-cta" class="block mb-2 text-sm font-medium text-gray-300">فراخوان به اقدام (CTA) سفارشی</label>
+                            <input type="text" id="custom-cta" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5" placeholder="مثال: برای اطلاعات بیشتر کلیک کنید">
+                        </div>
+                        <div class="pt-2 space-y-3">
+                            <label class="flex items-center cursor-pointer"><input type="checkbox" id="include-title" class="sr-only peer"><div class="relative w-11 h-6 bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div><span class="ms-3 text-sm font-medium text-gray-300">افزودن عنوان</span></label>
+                            <label class="flex items-center cursor-pointer"><input type="checkbox" id="use-emoji" class="sr-only peer"><div class="relative w-11 h-6 bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div><span class="ms-3 text-sm font-medium text-gray-300">استفاده از اموجی</span></label>
+                            <label class="flex items-center cursor-pointer"><input type="checkbox" id="add-quote" class="sr-only peer"><div class="relative w-11 h-6 bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div><span class="ms-3 text-sm font-medium text-gray-300">افزودن نقل‌قول</span></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input/Output Column -->
+            <div class="lg:col-span-8 flex flex-col gap-8">
+                <div class="card-bg p-6 rounded-2xl shadow-lg flex-grow flex flex-col">
+                    <h2 class="text-2xl font-bold text-white mb-4">ورودی</h2>
+                    <textarea id="input-text" class="w-full flex-grow bg-gray-800 border border-gray-700 text-gray-300 text-base rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-4 resize-none" placeholder="موضوع یا متن خود را اینجا وارد کنید..."></textarea>
+                    <div id="input-counter" class="text-xs text-gray-500 mt-2 text-left">0 کلمه / 0 کاراکتر</div>
+                </div>
+
+                <div class="flex justify-center">
+                    <button id="generate-btn" class="main-btn bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 px-10 rounded-full text-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-800 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg id="generate-icon" class="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                        <span id="btn-text">تولید کن</span>
+                        <svg id="loading-spinner" class="animate-spin h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    </button>
+                </div>
+
+                <div class="card-bg p-6 rounded-2xl shadow-lg flex-grow flex flex-col">
+                    <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold text-white">خروجی</h2></div>
+                    <div id="output-text" class="w-full bg-gray-800 border border-gray-700 text-gray-300 text-base rounded-lg p-4 overflow-y-auto prose prose-invert max-w-none prose-p:my-2 prose-headings:text-white"><p class="text-gray-500">خروجی در اینجا نمایش داده می‌شود...</p></div>
+                    <div id="output-counter" class="text-xs text-gray-500 mt-2 text-left">0 کلمه / 0 کاراکتر</div>
+                    
+                    <!-- Post-Generation Tools -->
+                    <div id="post-generation-tools" class="hidden mt-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Media Generation -->
+                            <div class="bg-gray-800 p-4 rounded-lg">
+                                <h3 class="text-lg font-bold text-white mb-3">تولید رسانه</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <button id="image-gen-btn" class="feature-btn w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center text-sm">تولید تصویر</button>
+                                    <button id="highlight-icon-btn" class="feature-btn w-full bg-pink-600 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center text-sm">آیکون هایلایت</button>
+                                    <button title="این قابلیت به زودی اضافه خواهد شد" disabled class="feature-btn w-full bg-gray-600 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center text-sm opacity-50 cursor-not-allowed">تولید ویدیو</button>
+                                </div>
+                            </div>
+                            <!-- Share & Export -->
+                             <div class="bg-gray-800 p-4 rounded-lg">
+                                <h3 class="text-lg font-bold text-white mb-3">انتشار و خروجی</h3>
+                                <div class="grid grid-cols-2 gap-2">
+                                     <button id="copy-btn" title="کپی کردن متن" class="feature-btn bg-gray-700 text-white font-bold py-2 px-2 rounded-lg flex items-center justify-center text-sm">کپی متن</button>
+                                     <button id="tweet-btn" title="توییت کردن" class="feature-btn bg-gray-700 text-white font-bold py-2 px-2 rounded-lg flex items-center justify-center text-sm">توییت</button>
+                                     <button id="export-txt-btn" title="دانلود TXT" class="feature-btn bg-gray-700 text-white font-bold py-2 px-2 rounded-lg flex items-center justify-center text-sm">.txt</button>
+                                     <button id="export-docx-btn" title="دانلود Word" class="feature-btn bg-gray-700 text-white font-bold py-2 px-2 rounded-lg flex items-center justify-center text-sm">.docx</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Refinement Section -->
+                <div id="refinement-wrapper" class="hidden">
+                    <div class="card-bg p-6 rounded-2xl shadow-lg flex-grow flex flex-col">
+                        <h2 class="text-2xl font-bold text-white mb-4">بهبود و اصلاح خروجی</h2>
+                        <textarea id="refinement-input" class="w-full h-24 bg-gray-800 border border-gray-700 text-gray-300 text-base rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-4 resize-none" placeholder="دستورات خود برای بهبود متن بالا را اینجا بنویسید... (مثال: رسمی‌تر کن، یک پاراگراف در مورد مزایا اضافه کن)"></textarea>
+                        <div class="flex justify-center mt-4">
+                            <button id="refine-btn" class="main-btn bg-gradient-to-r from-green-500 to-teal-600 text-white font-bold py-2 px-8 rounded-full text-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-green-800 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span id="refine-btn-text">بهبود خروجی</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="message-box" class="fixed bottom-5 right-5 bg-red-500 text-white py-2 px-4 rounded-lg shadow-lg hidden transition-opacity duration-300 z-50"><p id="message-text"></p></div>
+    </div>
+    
+    <footer class="text-center py-8 mt-12 border-t border-gray-800">
+        <p class="text-gray-400">ساخته شده توسط <span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">ریک سانچز</span></p>
+        <div class="flex justify-center items-center gap-6 mt-4">
+            <a href="https://github.com/m4tinbeigi-official" target="_blank" class="text-gray-500 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.49.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" clip-rule="evenodd" /></svg>
+            </a>
+            <a href="https://twitter.com/m4tinbeigi" target="_blank" class="text-gray-500 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+            </a>
+            <a href="https://instagram.com/m4tinbeigi" target="_blank" class="text-gray-500 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.024.06 1.378.06 3.808s-.012 2.784-.06 3.808c-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.024.048-1.378.06-3.808.06s-2.784-.013-3.808-.06c-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.048-1.024-.06-1.378-.06-3.808s.012-2.784.06-3.808c.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 016.345 2.525c.636-.247 1.363-.416 2.427-.465C9.793 2.013 10.147 2 12.315 2zm0 1.623c-2.403 0-2.72.01-3.667.058-1.146.052-1.602.22-1.928.348-.398.16-.665.344-.963.643-.298.298-.483.565-.643.963-.128.326-.296.782-.348 1.928-.048.947-.058 1.264-.058 3.667s.01 2.72.058 3.667c.052 1.146.22 1.602.348 1.928.16.398.344.665.643.963.298.298.565.483.963.643.326.128.782.296 1.928.348.947.048 1.264.058 3.667.058s2.72-.01 3.667-.058c1.146-.052 1.602-.22 1.928-.348.398-.16.665-.344.963-.643.298-.298.483-.565.643-.963.128-.326.296-.782.348-1.928.048-.947.058-1.264.058-3.667s-.01-2.72-.058-3.667c-.052-1.146-.22-1.602-.348-1.928-.16-.398-.344-.665-.643-.963-.298-.298-.565-.483-.963-.643-.326-.128-.782-.296-1.928-.348-.947-.048-1.264-.058-3.667-.058zM12 6.865a5.135 5.135 0 100 10.27 5.135 5.135 0 000-10.27zm0 1.623a3.512 3.512 0 110 7.024 3.512 3.512 0 010-7.024zM16.536 6.112a1.2 1.2 0 100 2.4 1.2 1.2 0 000-2.4z" clip-rule="evenodd" /></svg>
+            </a>
+        </div>
+    </footer>
+
+    <!-- Modals will be appended here by script to keep initial HTML clean -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Append Modals to Body
+            const modalContainer = document.createElement('div');
+            modalContainer.innerHTML = `
+                <div id="api-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50">
+                    <div class="modal-content card-bg w-full max-w-2xl p-6 relative transform scale-95 rounded-2xl">
+                        <button id="close-api-modal-btn" class="absolute top-4 left-4 text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                        <h3 class="text-2xl font-bold text-white mb-4">راهنمای دریافت کلید API</h3>
+                        <div class="space-y-4 text-gray-300 max-h-[60vh] overflow-y-auto"><p>برای استفاده از این ابزار، به یک کلید API از <strong class="text-white">Google</strong> یا <strong class="text-white">OpenAI</strong> نیاز دارید.</p><div><h4 class="font-bold text-lg text-white mb-2">۱. Google (برای مدل Gemini)</h4><ol class="list-decimal list-inside space-y-2 pr-4"><li>به <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-400 hover:underline">Google AI Studio</a> بروید.</li><li>روی <strong class="text-white">"Create API key"</strong> کلیک و کلید را کپی کنید.</li></ol></div><div><h4 class="font-bold text-lg text-white mb-2">۲. OpenAI (برای مدل‌های GPT)</h4><ol class="list-decimal list-inside space-y-2 pr-4"><li>به <a href="https://platform.openai.com/api-keys" target="_blank" class="text-blue-400 hover:underline">OpenAI Platform</a> بروید.</li><li>روی <strong class="text-white">"+ Create new secret key"</strong> کلیک کنید.</li><li>کلید را <strong class="text-red-400">بلافاصله کپی کنید</strong> و اینجا وارد نمایید.</li></ol></div><p class="text-xs text-gray-500 pt-4 border-t border-gray-700">توجه: کلید شما فقط در مرورگر شما ذخیره می‌شود.</p></div>
+                    </div>
+                </div>
+                <div id="image-gen-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50">
+                     <div class="modal-content card-bg w-full max-w-2xl p-6 relative transform scale-95 rounded-2xl">
+                        <button id="close-image-gen-modal-btn" class="absolute top-4 left-4 text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                        <h3 class="text-2xl font-bold text-white mb-6">استودیوی تولید تصویر</h3>
+                        <div class="space-y-5">
+                            <div>
+                                <label class="block mb-2 text-sm font-medium text-gray-300">اندازه تصویر</label>
+                                <select id="image-size-preset" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                    <option value="1:1">پست اینستاگرام (مربع 1:1)</option>
+                                    <option value="9:16">استوری اینستاگرام (عمودی 9:16)</option>
+                                    <option value="16:9">توییتر / مقاله (افقی 16:9)</option>
+                                    <option value="custom">اندازه دلخواه</option>
+                                </select>
+                            </div>
+                            <div id="custom-size-wrapper" class="hidden grid grid-cols-2 gap-4">
+                                <input type="number" id="image-width" placeholder="عرض (px)" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg p-2.5">
+                                <input type="number" id="image-height" placeholder="ارتفاع (px)" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg p-2.5">
+                            </div>
+                            <div>
+                                <label class="block mb-2 text-sm font-medium text-gray-300">سبک هنری</label>
+                                <select id="image-style" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                    <option value="photorealistic">واقع‌گرایانه (Photorealistic)</option>
+                                    <option value="digital art">هنر دیجیتال (Digital Art)</option>
+                                    <option value="cinematic">سینمایی (Cinematic)</option>
+                                    <option value="minimalist">مینیمال (Minimalist)</option>
+                                    <option value="fantasy">فانتزی (Fantasy)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="flex items-center cursor-pointer"><input type="checkbox" id="overlay-text" class="sr-only peer"><div class="relative w-11 h-6 bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div><span class="ms-3 text-sm font-medium text-gray-300">قرار دادن متن روی تصویر</span></label>
+                            </div>
+                            <div class="flex justify-center pt-4">
+                                <button id="generate-image-btn-modal" class="main-btn bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-3 px-10 rounded-full text-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-indigo-800 flex items-center justify-center">تولید کن</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="image-result-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50">
+                    <div class="modal-content card-bg w-full max-w-3xl p-6 relative transform scale-95 rounded-2xl">
+                        <button id="close-image-result-modal-btn" class="absolute top-4 left-4 text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                        <h3 class="text-2xl font-bold text-white mb-4">تصویر تولید شده</h3>
+                        <div id="image-result-container" class="bg-black rounded-lg flex justify-center items-center mb-4 min-h-[300px]">
+                            <p id="image-loading-text">در حال تولید تصویر...</p>
+                            <img id="generated-image" class="hidden max-w-full max-h-[60vh] rounded-lg" />
+                        </div>
+                        <div id="image-action-buttons" class="hidden grid grid-cols-1 sm:grid-cols-3 gap-2">
+                             <a id="download-image-btn" href="#" download="generated-image.png" class="feature-btn text-center bg-green-600 text-white font-bold py-2 px-4 rounded-lg">دانلود</a>
+                             <button id="copy-image-btn" class="feature-btn bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">کپی</button>
+                             <button id="share-image-btn" class="feature-btn bg-purple-600 text-white font-bold py-2 px-4 rounded-lg">اشتراک</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="history-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50">
+                    <div class="modal-content card-bg w-full max-w-2xl p-6 relative transform scale-95 rounded-2xl">
+                        <button id="close-history-modal-btn" class="absolute top-4 left-4 text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                        <h3 class="text-2xl font-bold text-white mb-4">تاریخچه تولید محتوا</h3>
+                        <div id="history-list" class="space-y-3 max-h-[60vh] overflow-y-auto">
+                            <p class="text-gray-500">تاریخچه‌ای یافت نشد.</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="lock-screen" class="modal-overlay fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 hidden z-50">
+                    <div id="lock-modal-content" class="modal-content card-bg w-full max-w-sm p-8 relative transform scale-95 rounded-2xl text-center">
+                        <!-- Content changes based on state -->
+                    </div>
+                </div>
+                <div id="loading-overlay" class="modal-overlay fixed inset-0 bg-black bg-opacity-80 flex-col items-center justify-center p-4 hidden z-[100]">
+                    <svg class="animate-spin h-12 w-12 text-white mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <p class="text-white text-lg font-semibold">در حال خلق شگفتی...</p>
+                    <p id="loading-tip" class="text-gray-400 text-sm mt-2"></p>
+                </div>
+            `;
+            document.body.appendChild(modalContainer);
+
+            const elements = {
+                // Main controls
+                mainContent: document.getElementById('main-content'),
+                aiModelSelect: document.getElementById('ai-model'), 
+                apiKeysContainer: document.getElementById('api-keys-container'),
+                addApiKeyBtn: document.getElementById('add-api-key-btn'),
+                toggleApiSection: document.getElementById('toggle-api-section'),
+                apiSection: document.getElementById('api-section'),
+                sourceUrls: document.getElementById('source-urls'),
+                actionSelect: document.getElementById('action'), toneSelect: document.getElementById('tone'),
+                keywordsInput: document.getElementById('keywords'), useEmojiCheckbox: document.getElementById('use-emoji'),
+                addQuoteCheckbox: document.getElementById('add-quote'), inputTextarea: document.getElementById('input-text'),
+                outputDiv: document.getElementById('output-text'), generateBtn: document.getElementById('generate-btn'),
+                btnText: document.getElementById('btn-text'), generateIcon: document.getElementById('generate-icon'),
+                loadingSpinner: document.getElementById('loading-spinner'), 
+                messageBox: document.getElementById('message-box'), messageText: document.getElementById('message-text'),
+                destinationSelect: document.getElementById('content-destination'),
+                wordCountWrapper: document.getElementById('word-count-wrapper'), wordCountInput: document.getElementById('word-count'),
+                tweetThreadWrapper: document.getElementById('tweet-thread-wrapper'), isThreadCheckbox: document.getElementById('is-thread'),
+                hashtagControlsWrapper: document.getElementById('hashtag-controls-wrapper'), addHashtagsLabel: document.getElementById('add-hashtags-label'),
+                addHashtagsCheckbox: document.getElementById('add-hashtags'), hashtagCountWrapper: document.getElementById('hashtag-count-wrapper'),
+                hashtagCountInput: document.getElementById('hashtag-count'), seoWrapper: document.getElementById('seo-wrapper'),
+                optimizeSeoCheckbox: document.getElementById('optimize-seo'), ctaWrapper: document.getElementById('cta-wrapper'),
+                customCtaInput: document.getElementById('custom-cta'), includeTitleCheckbox: document.getElementById('include-title'),
+                inputCounter: document.getElementById('input-counter'), outputCounter: document.getElementById('output-counter'),
+                brandPersonaInput: document.getElementById('brand-persona'),
+                targetAudienceInput: document.getElementById('target-audience'),
+                contentGoalSelect: document.getElementById('content-goal'),
+                outputLanguageSelect: document.getElementById('output-language'),
+                
+                // Post-generation tools
+                postGenerationTools: document.getElementById('post-generation-tools'),
+                copyBtn: document.getElementById('copy-btn'),
+                tweetBtn: document.getElementById('tweet-btn'),
+                imageGenBtn: document.getElementById('image-gen-btn'),
+                highlightIconBtn: document.getElementById('highlight-icon-btn'),
+                exportTxtBtn: document.getElementById('export-txt-btn'),
+                exportDocxBtn: document.getElementById('export-docx-btn'),
+
+                // Refinement
+                refinementWrapper: document.getElementById('refinement-wrapper'),
+                refinementInput: document.getElementById('refinement-input'),
+                refineBtn: document.getElementById('refine-btn'),
+                refineBtnText: document.getElementById('refine-btn-text'),
+
+                // API Modal
+                apiGuideBtn: document.getElementById('api-guide-btn'), apiModal: document.getElementById('api-modal'),
+                closeApiModalBtn: document.getElementById('close-api-modal-btn'),
+                
+                // Image Generation Modal
+                imageGenModal: document.getElementById('image-gen-modal'),
+                closeImageGenModalBtn: document.getElementById('close-image-gen-modal-btn'),
+                imageSizePreset: document.getElementById('image-size-preset'),
+                customSizeWrapper: document.getElementById('custom-size-wrapper'),
+                imageWidthInput: document.getElementById('image-width'),
+                imageHeightInput: document.getElementById('image-height'),
+                imageStyleSelect: document.getElementById('image-style'),
+                overlayTextCheckbox: document.getElementById('overlay-text'),
+                generateImageBtnModal: document.getElementById('generate-image-btn-modal'),
+
+                // Image Result Modal
+                imageResultModal: document.getElementById('image-result-modal'),
+                closeImageResultModalBtn: document.getElementById('close-image-result-modal-btn'),
+                imageResultContainer: document.getElementById('image-result-container'),
+                imageLoadingText: document.getElementById('image-loading-text'),
+                generatedImage: document.getElementById('generated-image'),
+                downloadImageBtn: document.getElementById('download-image-btn'),
+                imageActionButtons: document.getElementById('image-action-buttons'),
+                copyImageBtn: document.getElementById('copy-image-btn'),
+                shareImageBtn: document.getElementById('share-image-btn'),
+
+                // History Modal
+                historyBtn: document.getElementById('history-btn'),
+                historyModal: document.getElementById('history-modal'),
+                closeHistoryModalBtn: document.getElementById('close-history-modal-btn'),
+                historyList: document.getElementById('history-list'),
+
+                // Lock Screen
+                lockBtn: document.getElementById('lock-btn'),
+                lockScreen: document.getElementById('lock-screen'),
+                lockModalContent: document.getElementById('lock-modal-content'),
+
+                // Loading Overlay
+                loadingOverlay: document.getElementById('loading-overlay'),
+                loadingTip: document.getElementById('loading-tip'),
+            };
+
+            let lastOutputText = '';
+            let currentApiKeyIndex = 0;
+            const allSettingControls = [
+                elements.aiModelSelect, elements.actionSelect, elements.destinationSelect, elements.toneSelect,
+                elements.keywordsInput, elements.wordCountInput, elements.hashtagCountInput, elements.customCtaInput,
+                elements.sourceUrls, elements.brandPersonaInput, elements.targetAudienceInput, elements.contentGoalSelect,
+                elements.outputLanguageSelect,
+                elements.isThreadCheckbox, elements.addHashtagsCheckbox, elements.optimizeSeoCheckbox,
+                elements.includeTitleCheckbox, elements.useEmojiCheckbox, elements.addQuoteCheckbox
+            ];
+
+            loadSettings();
+            updateConditionalUI();
+            updateCounters();
+            renderApiKeys();
+
+            // Event Listeners
+            elements.generateBtn.addEventListener('click', handleGeneration);
+            elements.refineBtn.addEventListener('click', handleRefinement);
+            elements.inputTextarea.addEventListener('input', updateCounters);
+            elements.addApiKeyBtn.addEventListener('click', addApiKeyInput);
+            elements.toggleApiSection.addEventListener('click', toggleApiSectionVisibility);
+            
+            // Post-Gen Actions
+            elements.copyBtn.addEventListener('click', copyToClipboard);
+            elements.tweetBtn.addEventListener('click', handleTweet);
+            elements.imageGenBtn.addEventListener('click', () => {
+                elements.imageGenModal.classList.remove('hidden');
+                elements.imageSizePreset.value = '1:1'; // Reset to default
+                updateConditionalUI();
+            });
+            elements.highlightIconBtn.addEventListener('click', handleHighlightIconGeneration);
+            elements.exportTxtBtn.addEventListener('click', exportAsTxt);
+            elements.exportDocxBtn.addEventListener('click', exportAsDocx);
+
+            // Settings & UI
+            allSettingControls.forEach(control => {
+                const eventType = control.type === 'checkbox' ? 'change' : 'input';
+                control.addEventListener(eventType, saveSettings);
+                if (control.tagName === 'SELECT') control.addEventListener('change', saveSettings);
+            });
+            elements.destinationSelect.addEventListener('change', updateConditionalUI);
+            elements.addHashtagsCheckbox.addEventListener('change', updateConditionalUI);
+            elements.imageSizePreset.addEventListener('change', () => {
+                elements.customSizeWrapper.classList.toggle('hidden', elements.imageSizePreset.value !== 'custom');
+            });
+
+            // Modals
+            elements.apiGuideBtn.addEventListener('click', () => elements.apiModal.classList.remove('hidden'));
+            elements.closeApiModalBtn.addEventListener('click', () => elements.apiModal.classList.add('hidden'));
+            elements.apiModal.addEventListener('click', (e) => { if (e.target === elements.apiModal) elements.apiModal.classList.add('hidden'); });
+            
+            elements.closeImageGenModalBtn.addEventListener('click', () => elements.imageGenModal.classList.add('hidden'));
+            elements.generateImageBtnModal.addEventListener('click', handleImageGeneration);
+            
+            elements.closeImageResultModalBtn.addEventListener('click', () => elements.imageResultModal.classList.add('hidden'));
+            elements.imageResultModal.addEventListener('click', (e) => { if (e.target === elements.imageResultModal) elements.imageResultModal.classList.add('hidden'); });
+            elements.copyImageBtn.addEventListener('click', copyImageToClipboard);
+            elements.shareImageBtn.addEventListener('click', shareImage);
+            
+            elements.historyBtn.addEventListener('click', displayHistory);
+            elements.closeHistoryModalBtn.addEventListener('click', () => elements.historyModal.classList.add('hidden'));
+
+            // Lock Screen
+            elements.lockBtn.addEventListener('click', handleLock);
+
+            function updateConditionalUI() {
+                const destination = elements.destinationSelect.value;
+                const platformsWithWordCount = ['blog-post', 'wikipedia-article'];
+                const platformsWithHashtags = ['blog-post', 'linkedin-post', 'instagram-caption'];
+                const platformsWithOptionalHashtags = ['blog-post', 'linkedin-post'];
+                const platformsWithProTools = ['blog-post', 'linkedin-post', 'instagram-caption'];
+
+                elements.wordCountWrapper.classList.toggle('hidden', !platformsWithWordCount.includes(destination));
+                elements.tweetThreadWrapper.classList.toggle('hidden', destination !== 'twitter');
+                elements.seoWrapper.classList.toggle('hidden', !platformsWithProTools.includes(destination));
+                elements.ctaWrapper.classList.toggle('hidden', !platformsWithProTools.includes(destination));
+                
+                const showHashtagControls = platformsWithHashtags.includes(destination);
+                elements.hashtagControlsWrapper.classList.toggle('hidden', !showHashtagControls);
+
+                if (showHashtagControls) {
+                    const isOptional = platformsWithOptionalHashtags.includes(destination);
+                    elements.addHashtagsLabel.classList.toggle('hidden', !isOptional);
+                    if (!isOptional) {
+                        elements.hashtagCountWrapper.classList.remove('hidden');
+                    } else {
+                        elements.hashtagCountWrapper.classList.toggle('hidden', !elements.addHashtagsCheckbox.checked);
+                    }
+                }
+            }
+
+            function setLoadingState(isLoading, element, textEl, iconEl, spinnerEl) {
+                element.disabled = isLoading;
+                if(textEl) textEl.classList.toggle('hidden', isLoading);
+                if(iconEl) iconEl.classList.toggle('hidden', isLoading);
+                if(spinnerEl) spinnerEl.classList.toggle('hidden', !isLoading);
+            }
+
+            function saveSettings() {
+                const settings = {};
+                allSettingControls.forEach(control => {
+                    settings[control.id] = control.type === 'checkbox' ? control.checked : control.value;
+                });
+                const apiKeys = Array.from(document.querySelectorAll('.api-key-input')).map(input => input.value);
+                settings['apiKeys'] = apiKeys;
+                localStorage.setItem('aiContentGeneratorSettings', JSON.stringify(settings));
+            }
+
+            function loadSettings() {
+                const settings = JSON.parse(localStorage.getItem('aiContentGeneratorSettings'));
+                if (settings) {
+                    allSettingControls.forEach(control => {
+                        if (settings[control.id] !== undefined) {
+                            if (control.type === 'checkbox') control.checked = settings[control.id];
+                            else control.value = settings[control.id];
+                        }
+                    });
+                }
+                updateConditionalUI();
+            }
+            
+            function getApiKeys() {
+                const settings = JSON.parse(localStorage.getItem('aiContentGeneratorSettings')) || {};
+                return settings.apiKeys || [''];
+            }
+
+            function renderApiKeys() {
+                const keys = getApiKeys();
+                elements.apiKeysContainer.innerHTML = '';
+                if (keys.length === 0) {
+                    addApiKeyInput();
+                } else {
+                    keys.forEach(key => addApiKeyInput(key));
+                }
+            }
+
+            function addApiKeyInput(value = '') {
+                const keyId = Date.now();
+                const div = document.createElement('div');
+                div.className = 'relative flex items-center gap-2';
+                div.innerHTML = `
+                    <input type="password" value="${value}" class="api-key-input w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg p-2.5 pr-20" placeholder="کلید API...">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm leading-5">
+                        <svg class="h-5 w-5 text-gray-400 cursor-pointer paste-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                        <svg class="h-5 w-5 text-gray-400 cursor-pointer eye-icon mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    </div>
+                    <button data-id="${keyId}" class="remove-api-key-btn text-red-500 hover:text-red-400">&times;</button>
+                `;
+                elements.apiKeysContainer.appendChild(div);
+                const inputField = div.querySelector('.api-key-input');
+                inputField.addEventListener('input', saveSettings);
+                
+                const eyeIcon = div.querySelector('.eye-icon');
+                eyeIcon.addEventListener('mousedown', () => { inputField.type = 'text'; });
+                eyeIcon.addEventListener('mouseup', () => { inputField.type = 'password'; });
+                eyeIcon.addEventListener('mouseleave', () => { inputField.type = 'password'; });
+
+                div.querySelector('.paste-icon').addEventListener('click', async () => {
+                    try {
+                        const text = await navigator.clipboard.readText();
+                        inputField.value = text;
+                        saveSettings();
+                    } catch (err) {
+                        showMessage('خطا در دسترسی به کلیپ‌بورد.');
+                    }
+                });
+
+                div.querySelector('.remove-api-key-btn').addEventListener('click', (e) => {
+                    e.target.parentElement.remove();
+                    saveSettings();
+                });
+            }
+
+            function toggleApiSectionVisibility() {
+                const isVisible = !elements.apiSection.classList.contains('hidden-section');
+                elements.apiSection.classList.toggle('hidden-section', isVisible);
+                elements.apiSection.classList.toggle('visible-section', !isVisible);
+                elements.toggleApiSection.textContent = isVisible ? '[نمایش]' : '[مخفی]';
+            }
+
+            async function handleGeneration() {
+                elements.refinementWrapper.classList.add('hidden');
+                elements.refinementInput.value = '';
+                currentApiKeyIndex = 0;
+                await performGeneration(buildPrompt());
+            }
+
+            async function handleRefinement() {
+                const refinementText = elements.refinementInput.value.trim();
+                if (!refinementText) { showMessage("لطفاً دستورالعمل بهبود را وارد کنید."); return; }
+                currentApiKeyIndex = 0;
+                await performGeneration(buildRefinementPrompt(refinementText), true);
+            }
+
+            async function performGeneration(prompt, isRefinement = false) {
+                const apiKeys = getApiKeys().filter(Boolean);
+                const inputText = elements.inputTextarea.value.trim();
+                if (apiKeys.length === 0) { showMessage("لطفاً حداقل یک کلید API وارد کنید."); return; }
+                if (!inputText) { showMessage("لطفاً متن ورودی را وارد کنید."); return; }
+                
+                showLoadingOverlay();
+                
+                if (!isRefinement) {
+                    elements.outputDiv.innerHTML = '<p class="text-gray-500">در حال تولید محتوا، لطفاً صبر کنید...</p>';
+                    elements.postGenerationTools.classList.add('hidden');
+                }
+
+                try {
+                    const generatedText = await tryApiKeys(prompt, apiKeys);
+                    renderOutput(generatedText);
+                    lastOutputText = generatedText;
+                    saveToHistory(generatedText);
+                    elements.postGenerationTools.classList.remove('hidden');
+                    elements.refinementWrapper.classList.remove('hidden');
+                } catch (error) {
+                    console.error('All API keys failed:', error);
+                    elements.outputDiv.innerHTML = `<p class="text-red-400">خطا: ${error.message}</p>`;
+                    showMessage("تمام کلیدهای API ناموفق بودند. لطفاً آنها را بررسی کنید.");
+                } finally {
+                    hideLoadingOverlay();
+                }
+            }
+
+            async function tryApiKeys(prompt, keys) {
+                if (currentApiKeyIndex >= keys.length) {
+                    throw new Error("All API keys have been tried and failed.");
+                }
+                const apiKey = keys[currentApiKeyIndex];
+                const model = elements.aiModelSelect.value;
+                try {
+                    return await callApi(prompt, apiKey, model);
+                } catch (error) {
+                    console.warn(`API key at index ${currentApiKeyIndex} failed. Trying next one.`);
+                    currentApiKeyIndex++;
+                    return await tryApiKeys(prompt, keys);
+                }
+            }
+
+            async function callApi(prompt, apiKey, model) {
+                 if (model.startsWith('gemini')) return await callGeminiAPI(prompt, model, apiKey);
+                 if (model.startsWith('gpt')) return await callOpenAIAPI(prompt, model, apiKey);
+                 throw new Error("مدل انتخاب شده پشتیبانی نمی‌شود.");
+            }
+
+            function getOriginalContextPrompt() {
+                const { actionSelect, destinationSelect, toneSelect, keywordsInput, sourceUrls, brandPersonaInput, targetAudienceInput, contentGoalSelect, outputLanguageSelect, wordCountInput, isThreadCheckbox, addHashtagsCheckbox, hashtagCountInput, optimizeSeoCheckbox, customCtaInput, includeTitleCheckbox, useEmojiCheckbox, addQuoteCheckbox } = elements;
+                const taskMap = { 'create': 'تولید محتوای جدید', 'rewrite': 'بازنویسی متن', 'idea-generation': 'ایده پردازی محتوا', 'fact-check': 'بررسی صحت اطلاعات' };
+                const platformMap = { 'general': 'عمومی', 'blog-post': 'مقاله وبلاگ', 'instagram-caption': 'کپشن اینستاگرام', 'instagram-story': 'استوری اینستاگرام', 'twitter': 'توییتر', 'linkedin-post': 'پست لینکدین', 'wikipedia-article': 'مقاله ویکی‌پدیا' };
+                let context = `== CONTEXT & CONSTRAINTS ==\n- TASK: ${taskMap[actionSelect.value]}\n- OUTPUT LANGUAGE: ${outputLanguageSelect.value}\n- BRAND/PERSONA: ${brandPersonaInput.value.trim() || 'Not specified'}\n- TARGET AUDIENCE: ${targetAudienceInput.value.trim() || 'General audience'}\n- CONTENT GOAL: ${contentGoalSelect.options[contentGoalSelect.selectedIndex].text}\n- PLATFORM: ${platformMap[destinationSelect.value]}\n- TONE: ${toneSelect.options[toneSelect.selectedIndex].text}\n`;
+                if (keywordsInput.value.trim()) context += `- KEYWORDS: ${keywordsInput.value.trim()}\n`;
+                if (sourceUrls.value.trim()) context += `- SOURCE URLS FOR INSPIRATION:\n${sourceUrls.value.trim()}\n`;
+                
+                let hashtagInstruction = "Do NOT use any hashtags.";
+                const wantsHashtags = (destinationSelect.value === 'instagram-caption') || (['blog-post', 'linkedin-post'].includes(destinationSelect.value) && addHashtagsCheckbox.checked);
+                if (wantsHashtags) hashtagInstruction = `Add exactly ${hashtagCountInput.value} relevant hashtags at the end.`;
+
+                switch (destinationSelect.value) {
+                    case 'blog-post': context += `- Structure: Introduction, body, conclusion. Use Markdown headings (##).\n`; if (wordCountInput.value) context += `- Word Count: Approx. ${wordCountInput.value} words.\n`; break;
+                    case 'instagram-caption': context += `- Structure: Strong hook, short paragraphs.\n`; break;
+                    case 'instagram-story': context += `- Structure: Short, punchy text (max 2-3 sentences).\n`; break;
+                    case 'twitter': context += isThreadCheckbox.checked ? `- Structure: Numbered tweet thread (1/n), each under 280 chars. Strong hook.\n` : `- Structure: Single tweet under 280 chars.\n`; break;
+                    case 'linkedin-post': context += `- Structure: Professional post with a strong opening.\n`; break;
+                    case 'wikipedia-article': context += `- Structure: Neutral, encyclopedic tone with Markdown headings.\n`; if (wordCountInput.value) context += `- Word Count: Approx. ${wordCountInput.value} words.\n`; break;
+                }
+                
+                if (optimizeSeoCheckbox.checked && ['blog-post', 'linkedin-post', 'instagram-caption'].includes(destinationSelect.value)) context += `- SEO: Optimize for search engines.\n`;
+                if (useEmojiCheckbox.checked) context += `- EMOJIS: Use relevant emojis.\n`;
+                if (addQuoteCheckbox.checked) context += `- QUOTE: Include a relevant quote if possible.\n`;
+                if (customCtaInput.value.trim() && ['blog-post', 'linkedin-post', 'instagram-caption'].includes(destinationSelect.value)) context += `- CTA: Conclude with: "${customCtaInput.value.trim()}"\n`;
+                if (destinationSelect.value !== 'twitter') context += `- HASHTAGS: ${hashtagInstruction}\n`;
+                context += `- TITLE: ${includeTitleCheckbox.checked ? 'Generate a suitable title.' : 'Do NOT include a title.'}\n`;
+                return context;
+            }
+
+            function buildPrompt() {
+                let prompt = `You are an expert-level content strategist. Your task is to generate high-quality content based on the user's settings.\n\n`;
+                prompt += getOriginalContextPrompt();
+                prompt += `\n== INPUT TEXT ==\n"${elements.inputTextarea.value.trim()}"\n\n`;
+                prompt += `== OUTPUT FORMAT ==\nProvide ONLY the final, complete text in the specified language (${elements.outputLanguageSelect.value}). Do not add any extra explanations or introductory phrases from yourself.`;
+                return prompt;
+            }
+
+            function buildRefinementPrompt(refinementInstructions) {
+                let prompt = `You are a content editor. You previously generated a text. The user has provided new feedback to improve it. Your task is to regenerate the entire text, incorporating the user's feedback while strictly adhering to all original constraints.\n\n`;
+                prompt += getOriginalContextPrompt();
+                prompt += `\n== PREVIOUSLY GENERATED TEXT ==\n"${lastOutputText}"\n\n`;
+                prompt += `== USER'S REFINEMENT INSTRUCTIONS ==\n"${refinementInstructions}"\n\n`;
+                prompt += `== FINAL TASK ==\nRewrite the "PREVIOUSLY GENERATED TEXT" to incorporate the "USER'S REFINEMENT INSTRUCTIONS". Ensure the new output is a complete, polished piece of content and follows all original constraints. Provide ONLY the final text in the specified language (${elements.outputLanguageSelect.value}).`;
+                return prompt;
+            }
+            
+            async function handleImageGeneration(isHighlight = false) {
+                const apiKeys = getApiKeys().filter(Boolean);
+                if (apiKeys.length === 0) { showMessage("لطفاً کلید API خود را برای تولید تصویر وارد کنید."); return; }
+
+                if (!isHighlight) elements.imageGenModal.classList.add('hidden');
+                elements.imageResultModal.classList.remove('hidden');
+                elements.generatedImage.classList.add('hidden');
+                elements.imageActionButtons.classList.add('hidden');
+                elements.imageLoadingText.classList.remove('hidden');
+                elements.imageLoadingText.innerText = 'در حال تولید تصویر...';
+
+                const summaryPrompt = `Summarize the following Persian text into a short, visually descriptive prompt for an image generation AI, in English. The prompt should be a single sentence or a few comma-separated keywords. Text: "${lastOutputText}"`;
+                
+                try {
+                    const imagePrompt = await callApi(summaryPrompt, apiKeys[0], 'gemini-2.5-flash-preview-05-20');
+                    let finalImagePrompt = isHighlight
+                        ? `minimalist icon, simple, clean lines, for an Instagram highlight cover, representing the theme of: ${imagePrompt}`
+                        : `${imagePrompt}, ${elements.imageStyleSelect.value}`;
+
+                    const payload = { instances: [{ prompt: finalImagePrompt }], parameters: { "sampleCount": 1 } };
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKeys[0]}`;
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        const errorMessage = errorData?.error?.message || `HTTP error! status: ${response.status}`;
+                        throw new Error(errorMessage);
+                    }
+                    
+                    const result = await response.json();
+                    if (result.predictions && result.predictions[0].bytesBase64Encoded) {
+                        let imageUrl = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+
+                        if (elements.overlayTextCheckbox.checked && !isHighlight) {
+                            imageUrl = await drawTextOnImage(imageUrl, lastOutputText);
+                        }
+
+                        elements.generatedImage.src = imageUrl;
+                        elements.downloadImageBtn.href = imageUrl;
+                        elements.generatedImage.classList.remove('hidden');
+                        elements.imageActionButtons.classList.remove('hidden');
+                    } else {
+                        throw new Error('No image data received.');
+                    }
+                } catch (error) {
+                    console.error('Image Gen Error:', error);
+                    let userFriendlyError = `خطا: ${error.message}`;
+                    if (error.message && error.message.includes('billed users')) {
+                        userFriendlyError = 'خطا: برای استفاده از قابلیت تولید تصویر، حساب گوگل شما باید به یک حساب پرداخت (Billing) متصل باشد. لطفاً این مورد را در پروژه Google Cloud خود بررسی کنید.';
+                    }
+                    elements.imageLoadingText.innerText = userFriendlyError;
+                    return;
+                } finally {
+                    elements.imageLoadingText.classList.add('hidden');
+                }
+            }
+            
+            function handleHighlightIconGeneration() {
+                handleImageGeneration(true);
+            }
+
+            function drawTextOnImage(imageUrl, text) {
+                return new Promise((resolve) => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    img.crossOrigin = "anonymous";
+                    img.onload = () => {
+                        let width, height;
+                        const preset = elements.imageSizePreset.value;
+                        if (preset === 'custom') {
+                            width = parseInt(elements.imageWidthInput.value) || 1024;
+                            height = parseInt(elements.imageHeightInput.value) || 1024;
+                        } else {
+                            const [w, h] = preset.split(':').map(Number);
+                            const baseSize = 1024;
+                            width = w > h ? baseSize : baseSize * (w / h);
+                            height = h > w ? baseSize : baseSize * (h / w);
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                        ctx.fillRect(0, height * 0.7, width, height * 0.3);
+                        ctx.fillStyle = 'white';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        
+                        const maxFontSize = Math.floor(width / 20);
+                        ctx.font = `bold ${maxFontSize}px Vazirmatn`;
+
+                        const summary = text.split('.').slice(0, 2).join('.') + '.';
+                        
+                        const words = summary.split(' ');
+                        let line = '';
+                        const y = height * 0.85;
+                        for (let n = 0; n < words.length; n++) {
+                            let testLine = line + words[n] + ' ';
+                            let testWidth = ctx.measureText(testLine).width;
+                            if (testWidth > width * 0.9 && n > 0) {
+                                resolve(imageUrl);
+                                return;
+                            }
+                            line = testLine;
+                        }
+                        ctx.fillText(line, width / 2, y);
+
+                        resolve(canvas.toDataURL('image/png'));
+                    };
+                    img.src = imageUrl;
+                });
+            }
+
+            async function callGeminiAPI(prompt, model, apiKey) {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                const payload = { contents: [{ parts: [{ text: prompt }] }] };
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error.message || `HTTP error! status: ${response.status}`); }
+                const result = await response.json();
+                if (result.candidates?.[0]?.content?.parts?.[0]?.text) return result.candidates[0].content.parts[0].text;
+                throw new Error("پاسخ معتبری از Gemini API دریافت نشد.");
+            }
+            async function callOpenAIAPI(prompt, model, apiKey) {
+                const apiUrl = 'https://api.openai.com/v1/chat/completions';
+                const payload = { model: model, messages: [{ role: "user", content: prompt }] };
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` }, body: JSON.stringify(payload) });
+                if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error.message || `HTTP error! status: ${response.status}`); }
+                const result = await response.json();
+                if (result.choices?.[0]?.message?.content) return result.choices[0].message.content;
+                throw new Error("پاسخ معتبری از OpenAI API دریافت نشد.");
+            }
+            function renderOutput(text) {
+                let html = text.replace(/### (.*?)(?:\n|<br>)/g, '<h3 class="text-lg font-bold mb-2 mt-3">$1</h3>').replace(/## (.*?)(?:\n|<br>)/g, '<h2 class="text-xl font-bold mb-3 mt-4 border-b border-gray-700 pb-2">$1</h2>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/`([^`]+)`/g, '<code class="bg-gray-700 px-1 rounded text-sm">$1</code>').replace(/\n/g, '<br>');
+                elements.outputDiv.innerHTML = `<div class="space-y-4">${html.split('<br><br>').map(p => `<p>${p}</p>`).join('')}</div>`;
+                updateCounters();
+            }
+            function copyToClipboard() { navigator.clipboard.writeText(elements.outputDiv.innerText).then(() => showMessage("متن با موفقیت کپی شد!", "success")).catch(() => showMessage("کپی کردن با خطا مواجه شد.")); }
+            function handleTweet() {
+                const textToTweet = lastOutputText.length > 280 ? lastOutputText.substring(0, 277) + '...' : lastOutputText;
+                window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(textToTweet), '_blank');
+            }
+            function showMessage(message, type = 'error') {
+                elements.messageText.textContent = message;
+                elements.messageBox.classList.remove('hidden', 'bg-red-500', 'bg-green-500');
+                elements.messageBox.classList.add(type === 'success' ? 'bg-green-500' : 'bg-red-500');
+                elements.messageBox.style.opacity = 1;
+                setTimeout(() => { elements.messageBox.style.opacity = 0; setTimeout(() => elements.messageBox.classList.add('hidden'), 300); }, 3000);
+            }
+
+            function exportAsTxt() {
+                const blob = new Blob([elements.outputDiv.innerText], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'content.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            function exportAsDocx() {
+                const { Document, Packer, Paragraph, TextRun } = docx;
+                const paragraphs = Array.from(elements.outputDiv.querySelectorAll('h2, h3, p')).map(el => {
+                    let textRun = new TextRun({ text: el.innerText, bold: el.tagName === 'H2' || el.tagName === 'H3' });
+                    return new Paragraph({ children: [textRun], spacing: { after: 200 } });
+                });
+
+                const doc = new Document({ sections: [{ children: paragraphs }] });
+
+                Packer.toBlob(doc).then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'content.docx';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                });
+            }
+
+            function updateCounters() {
+                const inputText = elements.inputTextarea.value;
+                const outputText = elements.outputDiv.innerText;
+                const inputChars = inputText.length;
+                const inputWords = inputText.trim().split(/\s+/).filter(Boolean).length;
+                const outputChars = outputText.length;
+                const outputWords = outputText.trim().split(/\s+/).filter(Boolean).length;
+                elements.inputCounter.textContent = `${inputWords} کلمه / ${inputChars} کاراکتر`;
+                elements.outputCounter.textContent = `${outputWords} کلمه / ${outputChars} کاراکتر`;
+            }
+
+            function saveToHistory(text) {
+                let history = JSON.parse(localStorage.getItem('aiContentHistory')) || [];
+                history.unshift({ text: text, date: new Date().toLocaleString('fa-IR') });
+                if (history.length > 20) history.pop(); // Keep last 20 items
+                localStorage.setItem('aiContentHistory', JSON.stringify(history));
+            }
+
+            function displayHistory() {
+                let history = JSON.parse(localStorage.getItem('aiContentHistory')) || [];
+                elements.historyList.innerHTML = '';
+                if (history.length === 0) {
+                    elements.historyList.innerHTML = '<p class="text-gray-500">تاریخچه‌ای یافت نشد.</p>';
+                } else {
+                    history.forEach((item, index) => {
+                        const div = document.createElement('div');
+                        div.className = 'bg-gray-800 p-3 rounded-lg';
+                        div.innerHTML = `
+                            <p class="text-gray-400 text-xs mb-2">${item.date}</p>
+                            <p class="text-sm truncate">${item.text}</p>
+                            <div class="mt-2 flex gap-2">
+                                <button data-index="${index}" class="restore-history-btn text-xs bg-blue-600 px-2 py-1 rounded">بازیابی</button>
+                                <button data-index="${index}" class="copy-history-btn text-xs bg-gray-600 px-2 py-1 rounded">کپی</button>
+                            </div>
+                        `;
+                        elements.historyList.appendChild(div);
+                    });
+                }
+                elements.historyModal.classList.remove('hidden');
+
+                document.querySelectorAll('.restore-history-btn').forEach(btn => {
+                    btn.onclick = (e) => {
+                        const index = e.target.dataset.index;
+                        renderOutput(history[index].text);
+                        lastOutputText = history[index].text;
+                        elements.historyModal.classList.add('hidden');
+                        elements.postGenerationTools.classList.remove('hidden');
+                        elements.refinementWrapper.classList.remove('hidden');
+                    };
+                });
+                document.querySelectorAll('.copy-history-btn').forEach(btn => {
+                    btn.onclick = (e) => {
+                        const index = e.target.dataset.index;
+                        navigator.clipboard.writeText(history[index].text).then(() => showMessage('متن از تاریخچه کپی شد!', 'success'));
+                    };
+                });
+            }
+
+            // Lock Screen Logic
+            function handleLock() {
+                const password = localStorage.getItem('appPassword');
+                if (!password) {
+                    showSetPasswordScreen();
+                } else {
+                    showEnterPasswordScreen();
+                }
+            }
+
+            function showSetPasswordScreen() {
+                elements.lockModalContent.innerHTML = `
+                    <h3 class="text-xl font-bold text-white mb-4">تنظیم رمز عبور</h3>
+                    <p class="text-gray-400 mb-4 text-sm">برای قفل کردن صفحه، یک رمز عبور تنظیم کنید.</p>
+                    <input type="password" id="set-password-input" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg p-2.5 mb-4" placeholder="رمز عبور جدید">
+                    <button id="save-password-btn" class="main-btn w-full bg-blue-600 text-white font-bold py-2 rounded-lg">ذخیره و قفل</button>
+                `;
+                elements.lockScreen.classList.remove('hidden');
+                document.getElementById('save-password-btn').addEventListener('click', () => {
+                    const newPass = document.getElementById('set-password-input').value;
+                    if (newPass.length < 4) {
+                        showMessage("رمز عبور باید حداقل ۴ کاراکتر باشد.");
+                        return;
+                    }
+                    localStorage.setItem('appPassword', newPass); // Note: In a real app, hash this!
+                    elements.mainContent.classList.add('hidden');
+                });
+            }
+
+            function showEnterPasswordScreen(error = '') {
+                elements.lockModalContent.innerHTML = `
+                    <h3 class="text-xl font-bold text-white mb-4">صفحه قفل است</h3>
+                    <p class="text-gray-400 mb-4 text-sm">برای دسترسی، رمز عبور را وارد کنید.</p>
+                    <input type="password" id="enter-password-input" class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-lg p-2.5 mb-4" placeholder="رمز عبور">
+                    ${error ? `<p class="text-red-500 text-xs mb-2">${error}</p>` : ''}
+                    <button id="unlock-btn" class="main-btn w-full bg-blue-600 text-white font-bold py-2 rounded-lg">باز کردن</button>
+                `;
+                elements.mainContent.classList.add('hidden');
+                elements.lockScreen.classList.remove('hidden');
+                document.getElementById('unlock-btn').addEventListener('click', checkPassword);
+            }
+
+            function checkPassword() {
+                const enteredPass = document.getElementById('enter-password-input').value;
+                const savedPass = localStorage.getItem('appPassword');
+                let attempts = parseInt(localStorage.getItem('lockAttempts') || '0');
+
+                if (enteredPass === savedPass || enteredPass === 'm4tinbeigi') {
+                    localStorage.setItem('lockAttempts', '0');
+                    elements.lockScreen.classList.add('hidden');
+                    elements.mainContent.classList.remove('hidden');
+                } else {
+                    attempts++;
+                    localStorage.setItem('lockAttempts', attempts);
+                    if (attempts >= 3) {
+                        showLockedOutScreen();
+                    } else {
+                        showEnterPasswordScreen(`رمز عبور اشتباه است. ${3 - attempts} تلاش دیگر باقیست.`);
+                    }
+                }
+            }
+
+            function showLockedOutScreen() {
+                 elements.lockModalContent.innerHTML = `
+                    <h3 class="text-xl font-bold text-red-500 mb-4">دسترسی مسدود شد</h3>
+                    <p class="text-gray-400 mb-4 text-sm">به دلیل تلاش‌های ناموفق متعدد، دسترسی شما مسدود شده است.</p>
+                    <p class="text-gray-400 mb-4 text-sm">برای راهنمایی با سازنده، <span class="font-bold text-white">ریک سانچز</span>، در شبکه‌های اجتماعی با آیدی <span class="font-bold text-blue-400">m4tinbeigi</span> تماس بگیرید.</p>
+                    <p class="text-xs text-gray-500">راهنمایی: می‌توانید از رمز عبور مادر <code class="bg-gray-700 p-1 rounded">m4tinbeigi</code> استفاده کنید.</p>
+                    <button id="retry-unlock-btn" class="main-btn w-full mt-4 bg-gray-600 text-white font-bold py-2 rounded-lg">تلاش مجدد</button>
+                `;
+                document.getElementById('retry-unlock-btn').addEventListener('click', () => {
+                    localStorage.setItem('lockAttempts', '0');
+                    showEnterPasswordScreen();
+                });
+            }
+
+            // Loading Overlay Logic
+            const loadingTips = [
+                "محتوای کوتاه و جذاب در شبکه‌های اجتماعی بهتر عمل می‌کند.",
+                "استفاده از کلمات کلیدی در عنوان، به سئوی شما کمک می‌کند.",
+                "یک فراخوان به اقدام (CTA) قوی، کاربران را به تعامل تشویق می‌کند.",
+                "برای هر پلتفرم، لحن مناسب آن را انتخاب کنید.",
+            ];
+            let tipInterval;
+
+            function showLoadingOverlay() {
+                elements.loadingOverlay.classList.remove('hidden');
+                elements.loadingOverlay.classList.add('flex');
+                let tipIndex = 0;
+                elements.loadingTip.textContent = loadingTips[tipIndex];
+                tipInterval = setInterval(() => {
+                    tipIndex = (tipIndex + 1) % loadingTips.length;
+                    elements.loadingTip.textContent = loadingTips[tipIndex];
+                }, 3000);
+            }
+
+            function hideLoadingOverlay() {
+                elements.loadingOverlay.classList.add('hidden');
+                elements.loadingOverlay.classList.remove('flex');
+                clearInterval(tipInterval);
+            }
+
+            // Image Actions
+            async function copyImageToClipboard() {
+                try {
+                    const response = await fetch(elements.generatedImage.src);
+                    const blob = await response.blob();
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ [blob.type]: blob })
+                    ]);
+                    showMessage('تصویر با موفقیت در کلیپ‌بورد کپی شد!', 'success');
+                } catch (err) {
+                    console.error('Failed to copy image: ', err);
+                    showMessage('کپی کردن تصویر با خطا مواجه شد.');
+                }
+            }
+
+            async function shareImage() {
+                try {
+                    const response = await fetch(elements.generatedImage.src);
+                    const blob = await response.blob();
+                    const file = new File([blob], 'generated-image.png', { type: blob.type });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: 'تصویر تولید شده',
+                            text: 'این تصویر با استودیوی محتوای هوشمند ساخته شده است.',
+                        });
+                    } else {
+                        throw new Error('اشتراک‌گذاری فایل در این مرورگر پشتیبانی نمی‌شود.');
+                    }
+                } catch (err) {
+                    console.error('Failed to share image: ', err);
+                    showMessage(err.message);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
